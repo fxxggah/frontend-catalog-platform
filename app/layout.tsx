@@ -15,10 +15,10 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Catalogo Online | Plataforma SaaS',
+    default: 'Catalogo Online',
     template: '%s | Catalogo Online',
   },
-  description: 'Plataforma de catalogo online para lojas. Crie sua vitrine digital e venda pelo WhatsApp.',
+  description: 'Plataforma de catalogo online para lojas. Crie sua vitrine digital e venda pelas Redes Sociais.',
   keywords: ['catalogo online', 'loja virtual', 'whatsapp', 'e-commerce', 'vitrine digital'],
   authors: [{ name: 'Catalogo Online' }],
   icons: {
