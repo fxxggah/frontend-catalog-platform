@@ -5,10 +5,11 @@ import { useParams } from "next/navigation";
 import { storeService } from "@/services/storeService";
 import type { StoreResponse } from "@/types";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, Save } from "lucide-react";
+import { BackButton } from "@/components/admin/BackButton";
 
 export default function SettingsPage() {
   const params = useParams();
@@ -21,22 +22,18 @@ export default function SettingsPage() {
   const [whatsapp, setWhatsapp] = useState("");
   const [instagram, setInstagram] = useState("");
 
+  async function load() {
+    const data = await storeService.getStoreBySlug(storeSlug);
+    setStore(data);
+
+    setName(data.name);
+    setWhatsapp(data.whatsappNumber || "");
+    setInstagram(data.instagram || "");
+
+    setIsLoading(false);
+  }
+
   useEffect(() => {
-    async function load() {
-      try {
-        setIsLoading(true);
-
-        const data = await storeService.getStoreBySlug(storeSlug);
-
-        setStore(data);
-        setName(data.name);
-        setWhatsapp(data.whatsappNumber || "");
-        setInstagram(data.instagram || "");
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
     if (storeSlug) load();
   }, [storeSlug]);
 
@@ -49,7 +46,7 @@ export default function SettingsPage() {
       instagram,
     });
 
-    alert("Loja atualizada com sucesso!");
+    alert("Salvo!");
   }
 
   if (isLoading) {
@@ -60,23 +57,15 @@ export default function SettingsPage() {
     );
   }
 
-  if (!store) return <div>Loja não encontrada</div>;
-
   return (
-    <div className="max-w-2xl space-y-6">
-      <h1 className="text-2xl font-bold">Configurações da loja</h1>
+    <div className="space-y-6 max-w-xl">
+      <BackButton href={`/admin/${storeSlug}`} />
+
+      <h1 className="text-2xl font-bold">Configurações</h1>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Informações básicas</CardTitle>
-        </CardHeader>
-
         <CardContent className="space-y-4">
-          <Input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Nome da loja"
-          />
+          <Input value={name} onChange={(e) => setName(e.target.value)} />
 
           <Input
             value={whatsapp}

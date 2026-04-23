@@ -1,14 +1,14 @@
 "use client";
 
 import axios from "axios";
-import { LogIn } from "lucide-react";
+import { LogIn, ArrowLeft, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { authService } from "@/services/authService";
 
-// Configurações do Google
 const googleClientId =
   process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID?.trim() ||
   "711004756306-c1qb90c3ogkkjnsvcov86of25mmrhhjp.apps.googleusercontent.com";
@@ -23,7 +23,6 @@ export default function LoginPage() {
   useEffect(() => {
     let cancelled = false;
 
-    // Função que lida com a resposta do Google One Tap / Button
     const handleLogin = async (response: { credential?: string }) => {
       if (!response?.credential) {
         setErrorMessage("Não foi possível obter a credencial do Google.");
@@ -34,30 +33,23 @@ export default function LoginPage() {
         setStatus("submitting");
         setErrorMessage("");
 
-        // Envia o token para o seu backend
         await authService.loginWithGoogle({
           token: response.credential,
         });
         router.push("/admin/stores");
       } catch (err) {
         console.error(err);
-
         if (axios.isAxiosError(err) && !err.response) {
-          setErrorMessage(
-            "Não foi possível conectar ao backend. Verifique se a API está ativa."
-          );
+          setErrorMessage("Não foi possível conectar ao backend. Verifique se a API está ativa.");
         } else {
           setErrorMessage("Não foi possível concluir o login.");
         }
-
         setStatus("ready");
       }
     };
 
     const initGoogle = () => {
-      if (cancelled || !window.google?.accounts?.id) {
-        return;
-      }
+      if (cancelled || !window.google?.accounts?.id) return;
 
       window.google.accounts.id.initialize({
         client_id: googleClientId,
@@ -65,11 +57,7 @@ export default function LoginPage() {
       });
 
       const buttonElement = document.getElementById("googleButton");
-
-      if (!buttonElement) {
-        setErrorMessage("Não foi possível renderizar o botão do Google.");
-        return;
-      }
+      if (!buttonElement) return;
 
       buttonElement.innerHTML = "";
       window.google.accounts.id.renderButton(buttonElement, {
@@ -78,12 +66,10 @@ export default function LoginPage() {
         width: 320,
         shape: "pill",
       });
-
       setStatus("ready");
     };
 
     const ensureGoogleScript = () => {
-      // Verifica se o script já existe no DOM
       const existingScript = document.querySelector<HTMLScriptElement>(
         'script[src="https://accounts.google.com/gsi/client"]'
       );
@@ -97,7 +83,6 @@ export default function LoginPage() {
         return;
       }
 
-      // Cria e injeta o script caso não exista
       const script = document.createElement("script");
       script.src = "https://accounts.google.com/gsi/client";
       script.async = true;
@@ -109,57 +94,78 @@ export default function LoginPage() {
           setStatus("idle");
         }
       };
-
       document.body.appendChild(script);
     };
 
     ensureGoogleScript();
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [router]);
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#f7efe5_0%,#f0f7f4_45%,#eef4ff_100%)] px-4 py-10">
-      {/* Elementos decorativos de fundo */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(214,140,69,0.18),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(76,127,106,0.18),transparent_30%)]" />
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-indigo-50 via-white to-slate-50 px-4">
+      
+      {/* Botão de Voltar Minimalista */}
+      <div className="absolute top-8 left-8">
+        <Link href="/" className="group flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-indigo-600 transition-colors">
+          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+          Voltar para o site
+        </Link>
+      </div>
 
-      <Card className="relative z-10 w-full max-w-md border-white/60 bg-white/90 shadow-2xl backdrop-blur">
-        <CardHeader className="space-y-4 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#1f4f46] text-white shadow-lg">
-            <LogIn className="h-6 w-6" />
+      {/* Background Decor */}
+      <div className="absolute top-1/4 -left-20 w-96 h-96 bg-indigo-200/20 rounded-full blur-[120px]" />
+      <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-purple-200/20 rounded-full blur-[120px]" />
+
+      <Card className="relative z-10 w-full max-w-[440px] border-slate-200/60 bg-white/80 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.08)] backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
+        <CardHeader className="pt-12 pb-8 px-8 text-center space-y-6">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-[20px] bg-slate-900 text-white shadow-xl shadow-slate-200 group transition-all duration-500 hover:bg-indigo-600">
+            <LogIn className="h-7 w-7 group-hover:scale-110 transition-transform" />
           </div>
 
           <div className="space-y-2">
-            <CardTitle className="text-3xl font-bold tracking-tight text-slate-900">
-              Entrar no painel
+            <CardTitle className="text-4xl font-playfair font-black tracking-tight text-slate-900">
+              Bem-vindo!
             </CardTitle>
-            <p className="text-sm leading-6 text-slate-600">
-              Use sua conta Google para acessar a administração da loja.
+            <p className="text-slate-500 font-medium px-4">
+              Acesse o seu painel administrativo para gerenciar sua vitrine digital.
             </p>
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-5">
-          <div className="flex min-h-12 items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white p-3">
-            {/* O Google renderiza o botão aqui dentro */}
-            <div id="googleButton" />
+        <CardContent className="pb-12 px-10 space-y-8">
+          <div className="relative flex flex-col items-center justify-center gap-6 py-6 px-4 rounded-3xl border border-slate-100 bg-slate-50/50">
+            <div id="googleButton" className="transition-all hover:scale-[1.02] active:scale-[0.98]" />
+            
+            {/* Indicador de Segurança */}
+            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+              <ShieldCheck size={14} className="text-indigo-500" />
+              Conexão Segura via Google
+            </div>
           </div>
 
           {(status === "loading-script" || status === "submitting") && (
-            <Button className="w-full rounded-full" disabled>
-              {status === "loading-script"
-                ? "Carregando login do Google..."
-                : "Entrando..."}
-            </Button>
+            <div className="flex flex-col gap-3">
+              <Button className="w-full h-12 rounded-2xl bg-slate-900 text-white font-bold" disabled>
+                <div className="flex items-center gap-3">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                  {status === "loading-script" ? "Preparando ambiente..." : "Autenticando..."}
+                </div>
+              </Button>
+            </div>
           )}
 
           {errorMessage && (
-            <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {errorMessage}
-            </p>
+            <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+              <p className="rounded-2xl border border-red-100 bg-red-50/50 px-4 py-3 text-sm text-red-600 font-medium text-center">
+                {errorMessage}
+              </p>
+            </div>
           )}
+
+          <p className="text-center text-[11px] text-slate-400 font-medium leading-relaxed">
+            Ao entrar, você concorda com nossos <br />
+            <a href="#" className="underline hover:text-slate-900">Termos de Uso</a> e <a href="#" className="underline hover:text-slate-900">Política de Privacidade</a>.
+          </p>
         </CardContent>
       </Card>
     </div>

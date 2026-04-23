@@ -26,7 +26,10 @@ import {
   Link as LinkIcon,
   Image as ImageIcon,
   LayoutTemplate,
+  ChevronRight,
+  Sparkles,
 } from "lucide-react";
+import { BackButton } from "@/components/admin/BackButton";
 
 type CreateStorePayload = {
   name: string;
@@ -74,20 +77,14 @@ export default function NewStorePage() {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) {
     const { name, value } = e.target;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
+    setFormData((prev) => ({ ...prev, [name]: value }));
     if (error) setError(null);
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-
     if (!formData.name.trim()) {
-      setError("O nome da loja é obrigatório.");
+      setError("Dê um nome para sua nova jornada.");
       return;
     }
 
@@ -96,388 +93,192 @@ export default function NewStorePage() {
 
     try {
       const response = await storeService.createStore(formData);
-
       if (response?.slug) {
         router.push(`/admin/${response.slug}`);
         return;
       }
-
-      throw new Error("Resposta inesperada do servidor.");
+      throw new Error("Ocorreu um erro ao processar sua solicitação.");
     } catch (err: unknown) {
-      console.error("Erro ao criar loja:", err);
-
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Ocorreu um erro ao criar sua loja. Tente novamente.");
-      }
+      setError(err instanceof Error ? err.message : "Erro interno do servidor.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-8">
-      <div className="mx-auto w-full max-w-4xl">
-        <Card className="overflow-hidden border-slate-200/70 shadow-xl">
-          <CardHeader className="border-b border-slate-100 bg-white">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm">
-              <Store size={22} />
+    <div className="min-h-screen bg-[#fafafa] pb-20 pt-6 px-4">
+      <div className="mx-auto max-w-4xl space-y-6">
+        {/* Topo com Navegação */}
+        <div className="flex items-center justify-between">
+          <BackButton href="/admin/stores" />
+          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <Sparkles size={12} className="text-indigo-500" />
+            Configuração Inicial
+          </div>
+        </div>
+
+        <Card className="overflow-hidden border-none bg-white shadow-[0_32px_64px_-15px_rgba(0,0,0,0.05)] rounded-[2.5rem]">
+          <CardHeader className="space-y-4 border-b border-slate-50 p-8 md:p-12">
+            <div className="flex h-16 w-16 items-center justify-center rounded-[1.25rem] bg-slate-900 text-white shadow-2xl shadow-slate-200">
+              <Store size={28} />
             </div>
-
-            <CardTitle className="text-3xl font-black tracking-tight text-slate-900">
-              Criar sua loja
-            </CardTitle>
-
-            <CardDescription className="text-base text-slate-600">
-              Configure os dados iniciais da sua loja para começar com uma base
-              bem estruturada.
-            </CardDescription>
+            <div className="space-y-2">
+              <CardTitle className="text-3xl md:text-4xl font-playfair font-black text-slate-900">
+                Fundar nova loja
+              </CardTitle>
+              <CardDescription className="text-base text-slate-500 max-w-md leading-relaxed">
+                Preencha os detalhes abaixo para dar vida à sua vitrine digital. Você poderá refinar tudo depois.
+              </CardDescription>
+            </div>
           </CardHeader>
 
           <form onSubmit={handleSubmit}>
-            <CardContent className="grid gap-8 bg-white px-6 py-8">
-              {/* DADOS PRINCIPAIS */}
-              <section className="grid gap-5">
-                <div className="flex items-center gap-2">
-                  <ShoppingBag size={18} className="text-slate-500" />
-                  <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">
-                    Dados principais
-                  </h2>
+            <CardContent className="space-y-12 p-8 md:p-12">
+              
+              {/* SEÇÃO: ESSENCIAIS */}
+              <section className="grid gap-8 lg:grid-cols-3">
+                <div className="space-y-1">
+                  <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                    <ShoppingBag size={18} className="text-indigo-600" />
+                    Essenciais
+                  </h3>
+                  <p className="text-sm text-slate-400">A identidade básica do seu negócio.</p>
                 </div>
-
-                <div className="grid gap-2">
-                  <Label
-                    htmlFor="name"
-                    className="font-semibold text-slate-700"
-                  >
-                    Nome da loja <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    placeholder="Ex: Boutique da Tia"
-                    value={formData.name}
-                    onChange={handleChange}
-                    className="h-12"
-                    required
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label
-                    htmlFor="logo"
-                    className="flex items-center gap-2 font-semibold text-slate-700"
-                  >
-                    <ImageIcon size={16} className="text-slate-500" />
-                    URL da logo
-                  </Label>
-                  <Input
-                    id="logo"
-                    name="logo"
-                    placeholder="https://..."
-                    value={formData.logo}
-                    onChange={handleChange}
-                    className="h-12"
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label
-                    htmlFor="template"
-                    className="flex items-center gap-2 font-semibold text-slate-700"
-                  >
-                    <LayoutTemplate size={16} className="text-slate-500" />
-                    Template inicial
-                  </Label>
-                  <select
-                    id="template"
-                    name="template"
-                    value={formData.template}
-                    onChange={handleChange}
-                    className="h-12 rounded-md border border-input bg-background px-3 text-sm"
-                  >
-                    <option value="minimal">Minimal</option>
-                  </select>
-                </div>
-              </section>
-
-              {/* CONTATO E REDES */}
-              <section className="grid gap-5">
-                <div className="flex items-center gap-2">
-                  <MessageCircle size={18} className="text-slate-500" />
-                  <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">
-                    Contato e redes sociais
-                  </h2>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                
+                <div className="lg:col-span-2 grid gap-6">
                   <div className="grid gap-2">
-                    <Label
-                      htmlFor="whatsappNumber"
-                      className="font-semibold text-slate-700"
-                    >
-                      WhatsApp
-                    </Label>
-                    <Input
-                      id="whatsappNumber"
-                      name="whatsappNumber"
-                      placeholder="5514999999999"
-                      value={formData.whatsappNumber}
-                      onChange={handleChange}
-                      className="h-12"
-                    />
+                    <Label htmlFor="name" className="text-xs font-black uppercase tracking-widest text-slate-500">Nome da Marca</Label>
+                    <Input id="name" name="name" placeholder="Ex: Maison de Luxe" value={formData.name} onChange={handleChange} className="h-12 rounded-xl border-slate-100 bg-slate-50/50 focus:bg-white transition-all" required />
                   </div>
 
                   <div className="grid gap-2">
-                    <Label
-                      htmlFor="instagram"
-                      className="flex items-center gap-2 font-semibold text-slate-700"
-                    >
-                      <Instagram size={16} className="text-pink-500" />
-                      Instagram
-                    </Label>
-                    <Input
-                      id="instagram"
-                      name="instagram"
-                      placeholder="@minhaloja"
-                      value={formData.instagram}
-                      onChange={handleChange}
-                      className="h-12"
-                    />
+                    <Label htmlFor="logo" className="text-xs font-black uppercase tracking-widest text-slate-500">URL do Logotipo</Label>
+                    <div className="relative">
+                      <Input id="logo" name="logo" placeholder="https://..." value={formData.logo} onChange={handleChange} className="h-12 pl-11 rounded-xl border-slate-100 bg-slate-50/50" />
+                      <ImageIcon className="absolute left-4 top-3.5 text-slate-400" size={18} />
+                    </div>
                   </div>
 
-                  <div className="grid gap-2 md:col-span-2">
-                    <Label
-                      htmlFor="facebook"
-                      className="flex items-center gap-2 font-semibold text-slate-700"
-                    >
-                      <Facebook size={16} className="text-blue-600" />
-                      Facebook
-                    </Label>
-                    <Input
-                      id="facebook"
-                      name="facebook"
-                      placeholder="facebook.com/minhaloja"
-                      value={formData.facebook}
-                      onChange={handleChange}
-                      className="h-12"
-                    />
+                  <div className="grid gap-2">
+                    <div className="grid gap-2">
+  <Label 
+    htmlFor="template" 
+    className="text-xs font-black uppercase tracking-widest text-slate-500"
+  >
+    Estilo Visual
+  </Label>
+  <div className="relative group">
+    <select 
+      id="template" 
+      name="template" 
+      value={formData.template} 
+      onChange={handleChange} 
+      className="flex h-12 w-full rounded-xl border border-slate-100 bg-slate-50/50 px-11 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-950 appearance-none transition-all cursor-not-allowed"
+      disabled // Se só existe uma opção, manter o select travado evita confusão
+    >
+      <option value="minimal">Minimalist (Padrão)</option>
+    </select>
+    <LayoutTemplate className="absolute left-4 top-3.5 text-slate-400 group-hover:text-indigo-600 transition-colors" size={18} />
+    
+    {/* Badge de "Único" ou "Ativo" para dar um ar mais profissional */}
+    <div className="absolute right-4 top-3.5">
+      <span className="flex h-5 items-center rounded-full bg-indigo-50 px-2 text-[10px] font-bold text-indigo-600">
+        ATIVO
+      </span>
+    </div>
+  </div>
+  <p className="text-[10px] text-slate-400 mt-1 ml-1">
+    O template Minimal é otimizado para conversão e carregamento rápido.
+  </p>
+</div>
                   </div>
                 </div>
               </section>
 
-              {/* IDENTIDADE VISUAL */}
-              <section className="grid gap-5">
-                <div className="flex items-center gap-2">
-                  <Palette size={18} className="text-slate-500" />
-                  <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">
-                    Identidade visual
-                  </h2>
+              <hr className="border-slate-50" />
+
+              {/* SEÇÃO: CONEXÕES */}
+              <section className="grid gap-8 lg:grid-cols-3">
+                <div className="space-y-1">
+                  <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                    <MessageCircle size={18} className="text-emerald-600" />
+                    Conexões
+                  </h3>
+                  <p className="text-sm text-slate-400">Onde seus clientes encontrarão você.</p>
                 </div>
 
-                <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-                  <div className="rounded-xl border border-slate-200 p-4">
-                    <div
-                      className="mb-3 h-10 w-10 rounded-full border"
-                      style={{ backgroundColor: formData.primaryColor }}
-                    />
-                    <Label
-                      htmlFor="primaryColor"
-                      className="text-xs font-bold uppercase text-slate-500"
-                    >
-                      Cor principal
-                    </Label>
-                    <input
-                      id="primaryColor"
-                      type="color"
-                      name="primaryColor"
-                      value={formData.primaryColor}
-                      onChange={handleChange}
-                      className="mt-2 h-10 w-full cursor-pointer"
-                    />
+                <div className="lg:col-span-2 grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-2">
+                    <Label htmlFor="whatsappNumber" className="text-xs font-black uppercase tracking-widest text-slate-500">WhatsApp</Label>
+                    <Input id="whatsappNumber" name="whatsappNumber" placeholder="551499999999" value={formData.whatsappNumber} onChange={handleChange} className="h-12 rounded-xl border-slate-100 bg-slate-50/50" />
                   </div>
-
-                  <div className="rounded-xl border border-slate-200 p-4">
-                    <div
-                      className="mb-3 h-10 w-10 rounded-full border"
-                      style={{ backgroundColor: formData.secondaryColor }}
-                    />
-                    <Label
-                      htmlFor="secondaryColor"
-                      className="text-xs font-bold uppercase text-slate-500"
-                    >
-                      Cor secundária
-                    </Label>
-                    <input
-                      id="secondaryColor"
-                      type="color"
-                      name="secondaryColor"
-                      value={formData.secondaryColor}
-                      onChange={handleChange}
-                      className="mt-2 h-10 w-full cursor-pointer"
-                    />
-                  </div>
-
-                  <div className="rounded-xl border border-slate-200 p-4">
-                    <div
-                      className="mb-3 h-10 w-10 rounded-full border"
-                      style={{ backgroundColor: formData.tertiaryColor }}
-                    />
-                    <Label
-                      htmlFor="tertiaryColor"
-                      className="text-xs font-bold uppercase text-slate-500"
-                    >
-                      Cor terciária
-                    </Label>
-                    <input
-                      id="tertiaryColor"
-                      type="color"
-                      name="tertiaryColor"
-                      value={formData.tertiaryColor}
-                      onChange={handleChange}
-                      className="mt-2 h-10 w-full cursor-pointer"
-                    />
+                  <div className="grid gap-2">
+                    <Label htmlFor="instagram" className="text-xs font-black uppercase tracking-widest text-slate-500">Instagram</Label>
+                    <Input id="instagram" name="instagram" placeholder="@user" value={formData.instagram} onChange={handleChange} className="h-12 rounded-xl border-slate-100 bg-slate-50/50" />
                   </div>
                 </div>
               </section>
 
-              {/* ENDEREÇO */}
-              <section className="grid gap-5">
-                <div className="flex items-center gap-2">
-                  <MapPin size={18} className="text-slate-500" />
-                  <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">
-                    Endereço
-                  </h2>
+              <hr className="border-slate-50" />
+
+              {/* SEÇÃO: DESIGN SYSTEM */}
+              <section className="grid gap-8 lg:grid-cols-3">
+                <div className="space-y-1">
+                  <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                    <Palette size={18} className="text-indigo-600" />
+                    Cores
+                  </h3>
+                  <p className="text-sm text-slate-400">A paleta que define sua marca.</p>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                  <div className="grid gap-2 md:col-span-2">
-                    <Label
-                      htmlFor="street"
-                      className="font-semibold text-slate-700"
-                    >
-                      Rua
-                    </Label>
-                    <Input
-                      id="street"
-                      name="street"
-                      placeholder="Rua Exemplo"
-                      value={formData.street}
-                      onChange={handleChange}
-                      className="h-12"
-                    />
-                  </div>
-
-                  <div className="grid gap-2">
-                    <Label
-                      htmlFor="number"
-                      className="font-semibold text-slate-700"
-                    >
-                      Número
-                    </Label>
-                    <Input
-                      id="number"
-                      name="number"
-                      placeholder="123"
-                      value={formData.number}
-                      onChange={handleChange}
-                      className="h-12"
-                    />
-                  </div>
-
-                  <div className="grid gap-2">
-                    <Label
-                      htmlFor="city"
-                      className="font-semibold text-slate-700"
-                    >
-                      Cidade
-                    </Label>
-                    <Input
-                      id="city"
-                      name="city"
-                      placeholder="Botucatu"
-                      value={formData.city}
-                      onChange={handleChange}
-                      className="h-12"
-                    />
-                  </div>
-
-                  <div className="grid gap-2">
-                    <Label
-                      htmlFor="state"
-                      className="font-semibold text-slate-700"
-                    >
-                      Estado
-                    </Label>
-                    <Input
-                      id="state"
-                      name="state"
-                      placeholder="SP"
-                      value={formData.state}
-                      onChange={handleChange}
-                      className="h-12"
-                    />
-                  </div>
-
-                  <div className="grid gap-2">
-                    <Label
-                      htmlFor="country"
-                      className="font-semibold text-slate-700"
-                    >
-                      País
-                    </Label>
-                    <Input
-                      id="country"
-                      name="country"
-                      placeholder="Brasil"
-                      value={formData.country}
-                      onChange={handleChange}
-                      className="h-12"
-                    />
-                  </div>
-
-                  <div className="grid gap-2 md:col-span-3">
-                    <Label
-                      htmlFor="googleMapsLink"
-                      className="flex items-center gap-2 font-semibold text-slate-700"
-                    >
-                      <LinkIcon size={16} className="text-slate-500" />
-                      Link do Google Maps
-                    </Label>
-                    <Input
-                      id="googleMapsLink"
-                      name="googleMapsLink"
-                      placeholder="https://maps.google.com/..."
-                      value={formData.googleMapsLink}
-                      onChange={handleChange}
-                      className="h-12"
-                    />
-                  </div>
+                <div className="lg:col-span-2 flex flex-wrap gap-4">
+                  {[
+                    { id: "primaryColor", label: "Primária" },
+                    { id: "secondaryColor", label: "Secundária" },
+                    { id: "tertiaryColor", label: "Fundo" },
+                  ].map((color) => (
+                    <div key={color.id} className="flex flex-1 min-w-[120px] items-center gap-3 p-3 rounded-2xl border border-slate-100 bg-slate-50/30">
+                      <input 
+                        type="color" 
+                        name={color.id} 
+                        id={color.id} 
+                        // @ts-ignore
+                        value={formData[color.id]} 
+                        onChange={handleChange} 
+                        className="h-10 w-10 cursor-pointer rounded-lg border-none bg-transparent" 
+                      />
+                      <Label htmlFor={color.id} className="text-[10px] font-black uppercase text-slate-500">{color.label}</Label>
+                    </div>
+                  ))}
                 </div>
               </section>
 
+              {/* ALERT ERROR */}
               {error && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                <div className="flex items-center gap-3 rounded-2xl bg-rose-50 p-4 text-sm font-bold text-rose-600 border border-rose-100 animate-in fade-in slide-in-from-top-2">
+                  <AlertCircle size={18} />
                   {error}
                 </div>
               )}
             </CardContent>
 
-            <CardFooter className="flex flex-col gap-4 border-t border-slate-100 bg-white px-6 py-6">
-              <Button type="submit" className="h-12 w-full" disabled={loading}>
+            <CardFooter className="flex flex-col gap-6 border-t border-slate-50 bg-slate-50/30 p-8 md:p-12">
+              <Button 
+                type="submit" 
+                className="group h-14 w-full rounded-2xl bg-slate-900 text-base font-bold transition-all hover:scale-[1.01] hover:shadow-xl active:scale-[0.98]" 
+                disabled={loading}
+              >
                 {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Criando loja...
-                  </>
+                  <Loader2 className="animate-spin" />
                 ) : (
-                  "Criar loja"
+                  <span className="flex items-center gap-2">
+                    Confirmar e Inaugurar Loja
+                    <ChevronRight size={18} className="transition-transform group-hover:translate-x-1" />
+                  </span>
                 )}
               </Button>
-
-              <p className="text-center text-xs text-slate-400">
-                Você poderá editar esses dados depois em configurações da loja.
+              <p className="text-center text-xs font-medium text-slate-400">
+                Ao clicar em confirmar, sua loja será gerada instantaneamente.
               </p>
             </CardFooter>
           </form>
@@ -485,4 +286,11 @@ export default function NewStorePage() {
       </div>
     </div>
   );
+}
+
+// Pequeno helper para o ícone de erro que faltou no import acima
+function AlertCircle(props: any) {
+  return (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  )
 }

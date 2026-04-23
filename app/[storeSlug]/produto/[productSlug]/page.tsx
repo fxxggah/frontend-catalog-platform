@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { storeService } from "@/services/storeService";
 import { productService } from "@/services/productService";
-import { StoreTemplateRenderer } from "@/components/template/StoreTemplateRenderer";
+import { StoreTemplateRenderer } from "@/templates/base/StoreTemplateRenderer";
 import type { ProductResponse, StoreResponse } from "@/types";
 
 export default function ProductPage() {
@@ -42,11 +42,10 @@ export default function ProductPage() {
   if (!store || !product) return <div className="p-6">Produto não encontrado.</div>;
 
   return (
-    <StoreTemplateRenderer
-      template={store.template}
-      page="product"
-      store={store}
-      product={product}
-    />
-  );
+  <StoreTemplateRenderer
+    type="product"
+    store={store}
+    product={product}
+  />
+);
 }

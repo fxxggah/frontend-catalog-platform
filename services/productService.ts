@@ -111,4 +111,15 @@ export const productService = {
   async deleteProduct(storeSlug: string, productId: number): Promise<void> {
     await api.delete(`/admin/stores/${storeSlug}/products/${productId}`);
   },
+
+  async getProductById(
+    storeSlug: string,
+    id: number
+  ): Promise<ProductResponse> {
+    return unwrap(
+      await api.get<ProductResponse>(
+        `/admin/stores/${storeSlug}/products/${id}`
+      )
+    );
+  },
 };

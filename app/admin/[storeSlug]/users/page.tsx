@@ -5,9 +5,10 @@ import { useParams } from "next/navigation";
 import { userService } from "@/services/userService";
 import type { StoreUserResponse } from "@/types";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Users, Trash } from "lucide-react";
+import { BackButton } from "@/components/admin/BackButton";
 
 export default function UsersPage() {
   const params = useParams();
@@ -27,8 +28,7 @@ export default function UsersPage() {
   }
 
   async function handleRemove(userId: number) {
-    const confirmRemove = confirm("Remover esse usuário?");
-    if (!confirmRemove) return;
+    if (!confirm("Remover usuário?")) return;
 
     await userService.removeStoreUser(storeSlug, userId);
     load();
@@ -48,25 +48,20 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Usuários da loja</h1>
+      <BackButton href={`/admin/${storeSlug}`} />
+
+      <h1 className="text-2xl font-bold">Usuários</h1>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {users.map((user) => (
           <Card key={user.userId}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                {user.name ?? "Usuário"}
-              </CardTitle>
-            </CardHeader>
-
             <CardContent className="space-y-2">
-              <p className="text-sm text-slate-500">
-                {user.email ?? "Sem email"}
-              </p>
+              <h2 className="font-semibold">{user.name}</h2>
+
+              <p className="text-sm text-slate-500">{user.email}</p>
 
               <p className="text-xs text-slate-400">
-                Role: {user.role}
+                {user.role}
               </p>
 
               {user.role !== "OWNER" && (
@@ -83,12 +78,6 @@ export default function UsersPage() {
           </Card>
         ))}
       </div>
-
-      {users.length === 0 && (
-        <p className="text-sm text-slate-500">
-          Nenhum usuário encontrado.
-        </p>
-      )}
     </div>
   );
 }
