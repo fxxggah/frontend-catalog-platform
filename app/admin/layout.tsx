@@ -1,15 +1,24 @@
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
-import { AdminSidebar } from "@/components/admin/AdminSidebar"
+"use client";
+
+import type { ReactNode } from "react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { authService } from "@/services/authService";
 
 type AdminLayoutProps = {
-  children: React.ReactNode
-}
+  children: ReactNode;
+};
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
-  return (
-    <SidebarProvider>
-      <AdminSidebar />
-      <SidebarInset>{children}</SidebarInset>
-    </SidebarProvider>
-  )
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = authService.getToken();
+
+    if (!token) {
+      router.replace("/login");
+    }
+  }, [router]);
+
+  return <>{children}</>;
 }

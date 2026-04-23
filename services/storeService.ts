@@ -1,22 +1,29 @@
-import { mockStore, mockStores } from "@/mocks/store"
-import type { Store } from "@/types"
+import { api, unwrap } from "./api";
+import type { StoreRequest, StoreResponse } from "@/types";
 
-// Simula delay de API
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+export const storeService = {
+  async getStoreBySlug(slug: string): Promise<StoreResponse> {
+    return unwrap(await api.get<StoreResponse>(`/stores/${slug}`));
+  },
 
-export async function getStoreBySlug(slug: string): Promise<Store | null> {
-  await delay(100)
-  const store = mockStores.find((s) => s.slug === slug)
-  return store || null
-}
+  async createStore(payload: StoreRequest): Promise<StoreResponse> {
+    return unwrap(await api.post<StoreResponse>("/stores", payload));
+  },
 
-export async function getDefaultStore(): Promise<Store> {
-  await delay(100)
-  return mockStore
-}
+  async getMyStores(): Promise<StoreResponse[]> {
+    return unwrap(await api.get<StoreResponse[]>("/stores/my"));
+  },
 
-export async function updateStore(storeId: number, data: Partial<Store>): Promise<Store> {
-  await delay(300)
-  // Em producao, isso faria uma chamada PUT para a API
-  return { ...mockStore, ...data }
-}
+  async updateStore(
+    storeSlug: string,
+    payload: StoreRequest
+  ): Promise<StoreResponse> {
+    return unwrap(
+      await api.put<StoreResponse>(`/admin/stores/${storeSlug}`, payload)
+    );
+  },
+
+  async deactivateStore(storeSlug: string): Promise<void> {
+    await api.delete(`/admin/stores/${storeSlug}`);
+  },
+};

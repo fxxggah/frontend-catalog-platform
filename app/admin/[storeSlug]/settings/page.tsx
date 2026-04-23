@@ -1,0 +1,101 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { storeService } from "@/services/storeService";
+import type { StoreResponse } from "@/types";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Loader2, Save } from "lucide-react";
+
+export default function SettingsPage() {
+  const params = useParams();
+  const storeSlug = params.storeSlug as string;
+
+  const [store, setStore] = useState<StoreResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const [name, setName] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
+  const [instagram, setInstagram] = useState("");
+
+  useEffect(() => {
+    async function load() {
+      try {
+        setIsLoading(true);
+
+        const data = await storeService.getStoreBySlug(storeSlug);
+
+        setStore(data);
+        setName(data.name);
+        setWhatsapp(data.whatsappNumber || "");
+        setInstagram(data.instagram || "");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    if (storeSlug) load();
+  }, [storeSlug]);
+
+  async function handleSave() {
+    if (!store) return;
+
+    await storeService.updateStore(store.slug, {
+      name,
+      whatsappNumber: whatsapp,
+      instagram,
+    });
+
+    alert("Loja atualizada com sucesso!");
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-20">
+        <Loader2 className="animate-spin" />
+      </div>
+    );
+  }
+
+  if (!store) return <div>Loja não encontrada</div>;
+
+  return (
+    <div className="max-w-2xl space-y-6">
+      <h1 className="text-2xl font-bold">Configurações da loja</h1>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Informações básicas</CardTitle>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Nome da loja"
+          />
+
+          <Input
+            value={whatsapp}
+            onChange={(e) => setWhatsapp(e.target.value)}
+            placeholder="WhatsApp"
+          />
+
+          <Input
+            value={instagram}
+            onChange={(e) => setInstagram(e.target.value)}
+            placeholder="Instagram"
+          />
+
+          <Button onClick={handleSave}>
+            <Save className="mr-2 h-4 w-4" />
+            Salvar
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

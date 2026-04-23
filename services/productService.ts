@@ -1,127 +1,114 @@
-import { mockProducts } from "@/mocks/products"
-import type { Product, ProductFormData } from "@/types"
+import { api, unwrap } from "./api";
+import type {
+  PagedResponse,
+  ProductRequest,
+  ProductResponse,
+  SortOrder,
+} from "@/types";
 
-// Simula delay de API
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+type GetProductsParams = {
+  search?: string;
+  page?: number;
+  size?: number;
+  sortField?: string;
+  sortOrder?: SortOrder;
+};
 
-export type GetProductsParams = {
-  storeId?: number
-  categorySlug?: string
-  search?: string
-  page?: number
-  limit?: number
-  visible?: boolean
-}
+function buildProductParams(params: GetProductsParams = {}) {
+  const query: Record<string, string | number> = {};
 
-export type PaginatedProducts = {
-  products: Product[]
-  total: number
-  page: number
-  totalPages: number
-}
+  if (params.search) query.search = params.search;
+  if (params.page !== undefined) query.page = params.page;
+  if (params.size !== undefined) query.size = params.size;
 
-export async function getProducts(params: GetProductsParams = {}): Promise<PaginatedProducts> {
-  await delay(100)
-
-  let filtered = [...mockProducts]
-
-  if (params.storeId) {
-    filtered = filtered.filter((p) => p.storeId === params.storeId)
+  if (params.sortField) {
+    query.sort = `${params.sortField},${params.sortOrder ?? "asc"}`;
   }
 
-  if (params.categorySlug) {
-    filtered = filtered.filter((p) => p.categorySlug === params.categorySlug)
-  }
-
-  if (params.search) {
-    const searchLower = params.search.toLowerCase()
-    filtered = filtered.filter(
-      (p) => p.name.toLowerCase().includes(searchLower) || p.description.toLowerCase().includes(searchLower)
-    )
-  }
-
-  if (params.visible !== undefined) {
-    filtered = filtered.filter((p) => p.visible === params.visible)
-  }
-
-  const total = filtered.length
-  const page = params.page || 1
-  const limit = params.limit || 12
-  const totalPages = Math.ceil(total / limit)
-
-  const start = (page - 1) * limit
-  const products = filtered.slice(start, start + limit)
-
-  return {
-    products,
-    total,
-    page,
-    totalPages,
-  }
+  return query;
 }
 
-export async function getProductBySlug(slug: string): Promise<Product | null> {
-  await delay(100)
-  const product = mockProducts.find((p) => p.slug === slug)
-  return product || null
-}
+export const productService = {
+  async getPublicProducts(
+    storeSlug: string,
+    params: GetProductsParams = {}
+  ): Promise<PagedResponse<ProductResponse>> {
+    return unwrap(
+      await api.get<PagedResponse<ProductResponse>>(
+        `/stores/${storeSlug}/products`,
+        {
+          params: buildProductParams(params),
+        }
+      )
+    );
+  },
 
-export async function getProductById(id: number): Promise<Product | null> {
-  await delay(100)
-  const product = mockProducts.find((p) => p.id === id)
-  return product || null
-}
+  async getAdminProducts(
+    storeSlug: string,
+    params: GetProductsParams = {}
+  ): Promise<PagedResponse<ProductResponse>> {
+    return unwrap(
+      await api.get<PagedResponse<ProductResponse>>(
+        `/admin/stores/${storeSlug}/products`,
+        {
+          params: buildProductParams(params),
+        }
+      )
+    );
+  },
 
-export async function getRelatedProducts(productId: number, limit: number = 4): Promise<Product[]> {
-  await delay(100)
-  const product = mockProducts.find((p) => p.id === productId)
-  if (!product) return []
+  async getProductBySlug(
+    storeSlug: string,
+    productSlug: string
+  ): Promise<ProductResponse> {
+    return unwrap(
+      await api.get<ProductResponse>(
+        `/stores/${storeSlug}/products/slug/${productSlug}`
+      )
+    );
+  },
 
-  return mockProducts.filter((p) => p.categorySlug === product.categorySlug && p.id !== productId).slice(0, limit)
-}
+  async getProductsByCategory(
+    storeSlug: string,
+    categorySlug: string,
+    params: Omit<GetProductsParams, "search"> = {}
+  ): Promise<PagedResponse<ProductResponse>> {
+    return unwrap(
+      await api.get<PagedResponse<ProductResponse>>(
+        `/stores/${storeSlug}/categories/${categorySlug}/products`,
+        {
+          params: buildProductParams(params),
+        }
+      )
+    );
+  },
 
-export async function getFeaturedProducts(storeId: number, limit: number = 8): Promise<Product[]> {
-  await delay(100)
-  return mockProducts.filter((p) => p.storeId === storeId && p.visible && p.discountPrice).slice(0, limit)
-}
+  async createProduct(
+    storeSlug: string,
+    payload: ProductRequest
+  ): Promise<ProductResponse> {
+    return unwrap(
+      await api.post<ProductResponse>(
+        `/admin/stores/${storeSlug}/products`,
+        payload
+      )
+    );
+  },
 
-export async function createProduct(data: ProductFormData, storeId: number): Promise<Product> {
-  await delay(300)
-  // Em producao, isso faria uma chamada POST para a API
-  const newProduct: Product = {
-    id: mockProducts.length + 1,
-    ...data,
-    categorySlug: "", // Seria preenchido baseado no categoryId
-    storeId,
-    images: data.images.map((url, index) => ({
-      id: index + 1,
-      imageUrl: url,
-      position: index + 1,
-    })),
-  }
-  return newProduct
-}
+  async updateProduct(
+    storeSlug: string,
+    productId: number,
+    payload: ProductRequest
+  ): Promise<ProductResponse> {
+    return unwrap(
+      await api.put<ProductResponse>(
+        `/admin/stores/${storeSlug}/products/${productId}`,
+        payload
+      )
+    );
+  },
 
-export async function updateProduct(id: number, data: Partial<ProductFormData>): Promise<Product> {
-  await delay(300)
-  const product = mockProducts.find((p) => p.id === id)
-  if (!product) {
-    throw new Error("Produto nao encontrado")
-  }
-  return {
-    ...product,
-    ...data,
-    images: data.images
-      ? data.images.map((url, index) => ({
-          id: index + 1,
-          imageUrl: url,
-          position: index + 1,
-        }))
-      : product.images,
-  }
-}
-
-export async function deleteProduct(id: number): Promise<void> {
-  await delay(300)
-  // Em producao, isso faria uma chamada DELETE para a API
-}
+  async deleteProduct(storeSlug: string, productId: number): Promise<void> {
+    await api.delete(`/admin/stores/${storeSlug}/products/${productId}`);
+  },
+};
