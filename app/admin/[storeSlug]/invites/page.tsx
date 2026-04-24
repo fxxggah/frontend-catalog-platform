@@ -9,7 +9,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, Mail, Trash } from "lucide-react";
-import { BackButton } from "@/components/admin/BackButton";
 
 export default function InvitesPage() {
   const params = useParams();
@@ -47,7 +46,6 @@ export default function InvitesPage() {
 
   return (
     <div className="space-y-6">
-      <BackButton href={`/admin/${storeSlug}`} />
 
       <h1 className="text-2xl font-bold">Convites</h1>
 

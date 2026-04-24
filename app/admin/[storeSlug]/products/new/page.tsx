@@ -12,7 +12,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { BackButton } from "@/components/admin/BackButton";
 
 export default function NewProductPage() {
   const params = useParams();
@@ -63,7 +62,6 @@ export default function NewProductPage() {
     <div className="max-w-3xl mx-auto space-y-6 px-4 py-8">
       {/* Navegação Superior */}
       <div className="flex items-center justify-between">
-        <BackButton href={`/admin/${storeSlug}/products`} />
         <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
           <Sparkles size={12} className="text-amber-500" />
           Novo Item

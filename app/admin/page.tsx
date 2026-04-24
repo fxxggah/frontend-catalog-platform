@@ -1,14 +1,34 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { authService } from "@/services/authService";
+import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 
-export default function AdminPage() {
+type AdminLayoutProps = {
+  children: ReactNode;
+};
+
+export default function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/admin/stores");
+    const token = authService.getToken();
+
+    if (!token) {
+      router.replace("/login");
+    }
   }, [router]);
 
-  return <div className="p-6">Redirecionando...</div>;
+  return (
+    <SidebarProvider>
+      <AdminSidebar />
+
+      <SidebarInset>
+        {children}
+      </SidebarInset>
+    </SidebarProvider>
+  );
 }

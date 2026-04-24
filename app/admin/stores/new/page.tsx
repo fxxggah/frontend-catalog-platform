@@ -29,7 +29,6 @@ import {
   ChevronRight,
   Sparkles,
 } from "lucide-react";
-import { BackButton } from "@/components/admin/BackButton";
 
 type CreateStorePayload = {
   name: string;
@@ -110,7 +109,6 @@ export default function NewStorePage() {
       <div className="mx-auto max-w-4xl space-y-6">
         {/* Topo com Navegação */}
         <div className="flex items-center justify-between">
-          <BackButton href="/admin/stores" />
           <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
             <Sparkles size={12} className="text-indigo-500" />
             Configuração Inicial

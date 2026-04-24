@@ -12,7 +12,11 @@ export const authService = {
   },
 
   logout(): void {
-    tokenStorage.remove();
+  tokenStorage.remove();
+
+  if (typeof window !== "undefined") {
+    window.location.href = "/login";
+  }
   },
 
   getToken(): string | null {

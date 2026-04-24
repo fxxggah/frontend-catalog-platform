@@ -1,9 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { useParams, usePathname } from "next/navigation";
+import { BackButton } from "@/components/admin/BackButton";
 
 export default function AdminStoreLayout({
   children,
@@ -11,31 +10,19 @@ export default function AdminStoreLayout({
   children: ReactNode;
 }) {
   const params = useParams();
-  const router = useRouter();
+  const pathname = usePathname();
 
   const storeSlug = params.storeSlug as string;
 
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between border-b pb-4">
-        <button
-          onClick={() => router.push("/admin/stores")}
-          className="flex items-center gap-2 text-sm text-slate-600 hover:text-black"
-        >
-          <ArrowLeft size={16} />
-          Voltar
-        </button>
+  const isDashboardPage = pathname === `/admin/${storeSlug}`;
 
-        <a
-          href={`/${storeSlug}`}
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center gap-2 text-sm font-medium"
-        >
-          Ver catálogo
-          <ExternalLink size={16} />
-        </a>
-      </div>
+  const backHref = isDashboardPage
+    ? "/admin/stores"
+    : `/admin/${storeSlug}`;
+
+  return (
+    <div className="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 md:px-6">
+      <BackButton href={backHref} />
 
       {children}
     </div>

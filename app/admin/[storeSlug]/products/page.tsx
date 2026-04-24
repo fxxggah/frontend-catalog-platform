@@ -20,7 +20,6 @@ import type { ProductResponse, PagedResponse } from "@/types";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BackButton } from "@/components/admin/BackButton";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -77,7 +76,6 @@ export default function ProductsPage() {
       {/* Header Area */}
       <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
         <div className="space-y-4">
-          <BackButton href={`/admin/${storeSlug}`} />
           <div className="space-y-1">
             <h1 className="text-3xl font-playfair font-black text-slate-900">Produtos</h1>
             <p className="text-sm text-slate-500 italic">Gerencie sua vitrine e disponibilidade de estoque.</p>

@@ -21,7 +21,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BackButton } from "@/components/admin/BackButton";
 
 export default function EditProductPage() {
   const params = useParams();
@@ -93,7 +92,6 @@ export default function EditProductPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-8 px-4 py-8">
       <div className="flex items-center justify-between">
-        <BackButton href={`/admin/${storeSlug}/products`} />
         <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-indigo-500 bg-indigo-50 px-3 py-1 rounded-full">
           <Sparkles size={12} />
           Editor de Catálogo

@@ -2,12 +2,29 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { 
+  Loader2, 
+  Plus, 
+  MoreVertical, 
+  Layers, 
+  Edit3, 
+  Trash2, 
+  Hash,
+  Search
+} from "lucide-react";
+
 import { categoryService } from "@/services/categoryService";
 import type { CategoryResponse } from "@/types";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus, MoreVertical } from "lucide-react";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function CategoriesPage() {
   const params = useParams();
@@ -26,20 +43,39 @@ export default function CategoriesPage() {
     }
   }
 
-  async function handleDelete(id: number) {
-    const confirmDelete = confirm("Excluir categoria?");
-    if (!confirmDelete) return;
+  async function handleCreate() {
+    const name = window.prompt("Nome da nova categoria:");
+    if (!name) return;
 
-    await categoryService.deleteCategory(storeSlug, id);
-    load();
+    try {
+      await categoryService.createCategory(storeSlug, { name });
+      load();
+    } catch (error) {
+      alert("Erro ao criar categoria");
+    }
   }
 
   async function handleEdit(cat: CategoryResponse) {
-    const name = prompt("Novo nome:", cat.name);
-    if (!name) return;
+    const name = window.prompt("Editar nome da categoria:", cat.name);
+    if (!name || name === cat.name) return;
 
-    await categoryService.updateCategory(storeSlug, cat.id, { name });
-    load();
+    try {
+      await categoryService.updateCategory(storeSlug, cat.id, { name });
+      load();
+    } catch (error) {
+      alert("Erro ao atualizar categoria");
+    }
+  }
+
+  async function handleDelete(id: number) {
+    if (!window.confirm("Excluir esta categoria? Os produtos associados ficarão sem categoria.")) return;
+
+    try {
+      await categoryService.deleteCategory(storeSlug, id);
+      load();
+    } catch (error) {
+      alert("Erro ao excluir categoria");
+    }
   }
 
   useEffect(() => {
@@ -48,65 +84,95 @@ export default function CategoriesPage() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-20">
-        <Loader2 className="animate-spin" />
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
+        <Loader2 className="h-10 w-10 animate-spin text-indigo-600" />
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Organizando prateleiras...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between">
-        <h1 className="text-2xl font-bold">Categorias</h1>
+    <div className="max-w-6xl mx-auto space-y-8 px-4 py-6 md:px-6">
+      
+      {/* Header */}
+      <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+        <div className="space-y-4">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-playfair font-black text-slate-900">Categorias</h1>
+            <p className="text-sm text-slate-500 italic font-medium">Estruture seu catálogo para facilitar a navegação do cliente.</p>
+          </div>
+        </div>
 
-        <Button
-          onClick={async () => {
-            const name = prompt("Nome:");
-            if (!name) return;
-
-            await categoryService.createCategory(storeSlug, { name });
-            load();
-          }}
+        <Button 
+          onClick={handleCreate}
+          className="rounded-xl h-12 px-6 bg-slate-900 shadow-lg shadow-slate-200 hover:scale-105 transition-all"
         >
           <Plus className="mr-2 h-4 w-4" />
-          Nova categoria
+          Nova Categoria
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {categories.map((cat) => (
-          <Card key={cat.id} className="relative">
-            <div className="absolute right-2 top-2">
-              <details>
-                <summary>
-                  <MoreVertical size={18} />
-                </summary>
-
-                <div className="absolute right-0 bg-white border shadow rounded">
-                  <button
-                    onClick={() => handleEdit(cat)}
-                    className="block px-3 py-2 text-sm hover:bg-gray-100"
-                  >
-                    Editar
-                  </button>
-
-                  <button
-                    onClick={() => handleDelete(cat.id)}
-                    className="block px-3 py-2 text-sm text-red-600 hover:bg-gray-100"
-                  >
-                    Excluir
-                  </button>
+      {/* Grid de Categorias */}
+      {categories.length > 0 ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {categories.map((cat) => (
+            <Card key={cat.id} className="group relative overflow-hidden border-none bg-white shadow-sm transition-all hover:shadow-md rounded-3xl border border-slate-50">
+              <CardContent className="p-6 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 transition-colors group-hover:bg-indigo-600 group-hover:text-white">
+                    <Layers size={20} />
+                  </div>
+                  <div>
+                    <h2 className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                      {cat.name}
+                    </h2>
+                    <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                      <Hash size={10} />
+                      <span>{cat.slug}</span>
+                    </div>
+                  </div>
                 </div>
-              </details>
-            </div>
 
-            <CardContent>
-              <h2 className="font-semibold">{cat.name}</h2>
-              <p className="text-sm text-slate-500">/{cat.slug}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-slate-100">
+                      <MoreVertical size={16} className="text-slate-400" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="rounded-xl border-slate-100 p-2 shadow-xl">
+                    <DropdownMenuItem 
+                      onClick={() => handleEdit(cat)}
+                      className="flex cursor-pointer items-center gap-2 rounded-lg py-2 text-slate-700 focus:bg-indigo-50 focus:text-indigo-600"
+                    >
+                      <Edit3 size={14} /> Editar Nome
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => handleDelete(cat.id)}
+                      className="flex cursor-pointer items-center gap-2 rounded-lg py-2 text-rose-600 focus:bg-rose-50 focus:text-rose-700"
+                    >
+                      <Trash2 size={14} /> Excluir
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        /* Empty State */
+        <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-[3rem] border-2 border-dashed border-slate-100 bg-white p-12 text-center">
+          <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-slate-50 text-slate-300">
+            <Search size={40} />
+          </div>
+          <h3 className="mt-6 text-xl font-bold text-slate-900">Nenhuma categoria ainda</h3>
+          <p className="mt-2 max-w-xs text-sm text-slate-500">
+            Crie categorias como "Lançamentos", "Masculino" ou "Promoções" para organizar seus produtos.
+          </p>
+          <Button onClick={handleCreate} className="mt-8 rounded-xl bg-indigo-600 hover:bg-indigo-700">
+            <Plus className="mr-2 h-4 w-4" /> Criar minha primeira categoria
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, Save } from "lucide-react";
-import { BackButton } from "@/components/admin/BackButton";
+
 
 export default function SettingsPage() {
   const params = useParams();
@@ -59,7 +59,6 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6 max-w-xl">
-      <BackButton href={`/admin/${storeSlug}`} />
 
       <h1 className="text-2xl font-bold">Configurações</h1>
 

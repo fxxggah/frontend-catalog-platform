@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
   LayoutDashboard,
   Package,
@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import { authService } from "@/services/authService"
 
 const menuItems = [
   {
@@ -61,6 +62,12 @@ const menuItems = [
 
 export function AdminSidebar() {
   const pathname = usePathname()
+  const router = useRouter()
+
+  const handleLogout = () => {
+    authService.logout()
+    router.replace("/login")
+  }
 
   return (
     <Sidebar className="border-r-0">
@@ -133,7 +140,6 @@ export function AdminSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Upgrade Card */}
         <div className="mx-2 mt-4 p-4 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/10">
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="size-4 text-primary" />
@@ -168,6 +174,7 @@ export function AdminSidebar() {
                   <ChevronUp className="ml-auto size-4" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
+
               <DropdownMenuContent
                 side="top"
                 className="w-[--radix-popper-anchor-width] rounded-xl"
@@ -178,17 +185,25 @@ export function AdminSidebar() {
                     Ver Loja
                   </Link>
                 </DropdownMenuItem>
+
                 <DropdownMenuItem asChild className="rounded-lg">
                   <Link href="/admin/settings" className="flex items-center gap-2">
                     <Settings className="size-4" />
                     Configuracoes
                   </Link>
                 </DropdownMenuItem>
+
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="rounded-lg text-destructive focus:text-destructive">
+
+                {/* 🔥 LOGOUT FUNCIONAL */}
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="rounded-lg text-destructive focus:text-destructive cursor-pointer"
+                >
                   <LogOut className="size-4" />
                   Sair
                 </DropdownMenuItem>
+
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>

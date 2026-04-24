@@ -8,7 +8,6 @@ import type { StoreUserResponse } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Users, Trash } from "lucide-react";
-import { BackButton } from "@/components/admin/BackButton";
 
 export default function UsersPage() {
   const params = useParams();
@@ -48,8 +47,6 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <BackButton href={`/admin/${storeSlug}`} />
-
       <h1 className="text-2xl font-bold">Usuários</h1>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
