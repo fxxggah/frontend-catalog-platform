@@ -3,7 +3,7 @@
 import axios from "axios";
 import { LogIn, ArrowLeft, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +15,10 @@ const googleClientId =
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const redirect = searchParams.get("redirect");
+
   const [status, setStatus] = useState<
     "idle" | "loading-script" | "ready" | "submitting"
   >("loading-script");
@@ -36,14 +40,19 @@ export default function LoginPage() {
         await authService.loginWithGoogle({
           token: response.credential,
         });
-        router.push("/admin/stores");
+
+        router.push(redirect || "/admin/stores");
       } catch (err) {
         console.error(err);
+
         if (axios.isAxiosError(err) && !err.response) {
-          setErrorMessage("Não foi possível conectar ao backend. Verifique se a API está ativa.");
+          setErrorMessage(
+            "Não foi possível conectar ao backend. Verifique se a API está ativa."
+          );
         } else {
           setErrorMessage("Não foi possível concluir o login.");
         }
+
         setStatus("ready");
       }
     };
@@ -60,12 +69,14 @@ export default function LoginPage() {
       if (!buttonElement) return;
 
       buttonElement.innerHTML = "";
+
       window.google.accounts.id.renderButton(buttonElement, {
         theme: "outline",
         size: "large",
         width: 320,
         shape: "pill",
       });
+
       setStatus("ready");
     };
 
@@ -79,6 +90,7 @@ export default function LoginPage() {
           initGoogle();
           return;
         }
+
         existingScript.addEventListener("load", initGoogle, { once: true });
         return;
       }
@@ -94,25 +106,32 @@ export default function LoginPage() {
           setStatus("idle");
         }
       };
+
       document.body.appendChild(script);
     };
 
     ensureGoogleScript();
-    return () => { cancelled = true; };
-  }, [router]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [router, redirect]);
 
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-indigo-50 via-white to-slate-50 px-4">
-      
-      {/* Botão de Voltar Minimalista */}
       <div className="absolute top-8 left-8">
-        <Link href="/" className="group flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-indigo-600 transition-colors">
-          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+        <Link
+          href="/"
+          className="group flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-indigo-600 transition-colors"
+        >
+          <ArrowLeft
+            size={16}
+            className="group-hover:-translate-x-1 transition-transform"
+          />
           Voltar para o site
         </Link>
       </div>
 
-      {/* Background Decor */}
       <div className="absolute top-1/4 -left-20 w-96 h-96 bg-indigo-200/20 rounded-full blur-[120px]" />
       <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-purple-200/20 rounded-full blur-[120px]" />
 
@@ -126,17 +145,21 @@ export default function LoginPage() {
             <CardTitle className="text-4xl font-playfair font-black tracking-tight text-slate-900">
               Bem-vindo!
             </CardTitle>
+
             <p className="text-slate-500 font-medium px-4">
-              Acesse o seu painel administrativo para gerenciar sua vitrine digital.
+              Acesse o seu painel administrativo para gerenciar sua vitrine
+              digital.
             </p>
           </div>
         </CardHeader>
 
         <CardContent className="pb-12 px-10 space-y-8">
           <div className="relative flex flex-col items-center justify-center gap-6 py-6 px-4 rounded-3xl border border-slate-100 bg-slate-50/50">
-            <div id="googleButton" className="transition-all hover:scale-[1.02] active:scale-[0.98]" />
-            
-            {/* Indicador de Segurança */}
+            <div
+              id="googleButton"
+              className="transition-all hover:scale-[1.02] active:scale-[0.98]"
+            />
+
             <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
               <ShieldCheck size={14} className="text-indigo-500" />
               Conexão Segura via Google
@@ -145,10 +168,15 @@ export default function LoginPage() {
 
           {(status === "loading-script" || status === "submitting") && (
             <div className="flex flex-col gap-3">
-              <Button className="w-full h-12 rounded-2xl bg-slate-900 text-white font-bold" disabled>
+              <Button
+                className="w-full h-12 rounded-2xl bg-slate-900 text-white font-bold"
+                disabled
+              >
                 <div className="flex items-center gap-3">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                  {status === "loading-script" ? "Preparando ambiente..." : "Autenticando..."}
+                  {status === "loading-script"
+                    ? "Preparando ambiente..."
+                    : "Autenticando..."}
                 </div>
               </Button>
             </div>
@@ -164,7 +192,14 @@ export default function LoginPage() {
 
           <p className="text-center text-[11px] text-slate-400 font-medium leading-relaxed">
             Ao entrar, você concorda com nossos <br />
-            <a href="#" className="underline hover:text-slate-900">Termos de Uso</a> e <a href="#" className="underline hover:text-slate-900">Política de Privacidade</a>.
+            <a href="#" className="underline hover:text-slate-900">
+              Termos de Uso
+            </a>{" "}
+            e{" "}
+            <a href="#" className="underline hover:text-slate-900">
+              Política de Privacidade
+            </a>
+            .
           </p>
         </CardContent>
       </Card>

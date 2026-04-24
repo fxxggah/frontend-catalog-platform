@@ -10,5 +10,7 @@ export type StoreInviteRequest = {
 export type StoreInviteResponse = {
   id: number
   email: string
+  token: string
   expiresAt: string
+  usedAt?: string
 }

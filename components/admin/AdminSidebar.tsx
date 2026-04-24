@@ -1,7 +1,8 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+import { useParams, usePathname, useRouter } from "next/navigation"
 import {
   LayoutDashboard,
   Package,
@@ -36,38 +37,71 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { authService } from "@/services/authService"
-
-const menuItems = [
-  {
-    title: "Dashboard",
-    href: "/admin",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Produtos",
-    href: "/admin/products",
-    icon: Package,
-  },
-  {
-    title: "Categorias",
-    href: "/admin/categories",
-    icon: FolderOpen,
-  },
-  {
-    title: "Configuracoes",
-    href: "/admin/settings",
-    icon: Settings,
-  },
-]
+import { userService } from "@/services/userService"
+import type { StoreUserRole } from "@/types"
 
 export function AdminSidebar() {
   const pathname = usePathname()
   const router = useRouter()
+  const params = useParams()
+
+  const storeSlug = params.storeSlug as string | undefined
+
+  const [role, setRole] = useState<StoreUserRole | null>(null)
+
+  useEffect(() => {
+    async function loadRole() {
+      if (!storeSlug) return
+
+      try {
+        const data = await userService.getCurrentStoreUser(storeSlug)
+        setRole(data.role)
+      } catch (error) {
+        console.error("Erro ao carregar role do usuário:", error)
+      }
+    }
+
+    loadRole()
+  }, [storeSlug])
 
   const handleLogout = () => {
     authService.logout()
     router.replace("/login")
   }
+
+  const menuItems = storeSlug
+    ? [
+        {
+          title: "Dashboard",
+          href: `/admin/${storeSlug}`,
+          icon: LayoutDashboard,
+          ownerOnly: false,
+        },
+        {
+          title: "Produtos",
+          href: `/admin/${storeSlug}/products`,
+          icon: Package,
+          ownerOnly: false,
+        },
+        {
+          title: "Categorias",
+          href: `/admin/${storeSlug}/categories`,
+          icon: FolderOpen,
+          ownerOnly: false,
+        },
+        {
+          title: "Configurações",
+          href: `/admin/${storeSlug}/settings`,
+          icon: Settings,
+          ownerOnly: true,
+        },
+      ]
+    : []
+
+  const visibleMenuItems = menuItems.filter((item) => {
+    if (!item.ownerOnly) return true
+    return role === "OWNER"
+  })
 
   return (
     <Sidebar className="border-r-0">
@@ -75,7 +109,7 @@ export function AdminSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild className="hover:bg-transparent">
-              <Link href="/admin" className="flex items-center gap-3">
+              <Link href={storeSlug ? `/admin/${storeSlug}` : "/admin"} className="flex items-center gap-3">
                 <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
                   <Store className="size-5" />
                 </div>
@@ -96,17 +130,18 @@ export function AdminSidebar() {
           <SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-3 mb-2">
             Menu Principal
           </SidebarGroupLabel>
+
           <SidebarGroupContent>
             <SidebarMenu className="gap-1">
-              {menuItems.map((item) => {
+              {visibleMenuItems.map((item) => {
                 const isActive =
                   pathname === item.href ||
-                  (item.href !== "/admin" && pathname.startsWith(item.href))
+                  pathname.startsWith(`${item.href}/`)
 
                 return (
                   <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton 
-                      asChild 
+                    <SidebarMenuButton
+                      asChild
                       isActive={isActive}
                       className="h-11 rounded-xl data-[active=true]:bg-primary data-[active=true]:text-primary-foreground"
                     >
@@ -122,23 +157,26 @@ export function AdminSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup className="mt-auto">
-          <SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-3 mb-2">
-            Acoes Rapidas
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu className="gap-1">
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild className="h-11 rounded-xl">
-                  <Link href="/bella-moda" target="_blank">
-                    <ExternalLink className="size-5" />
-                    <span className="font-medium">Ver Loja</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {storeSlug && (
+          <SidebarGroup className="mt-auto">
+            <SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-3 mb-2">
+              Ações Rápidas
+            </SidebarGroupLabel>
+
+            <SidebarGroupContent>
+              <SidebarMenu className="gap-1">
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild className="h-11 rounded-xl">
+                    <Link href={`/${storeSlug}`} target="_blank">
+                      <ExternalLink className="size-5" />
+                      <span className="font-medium">Ver Loja</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         <div className="mx-2 mt-4 p-4 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/10">
           <div className="flex items-center gap-2 mb-2">
@@ -149,7 +187,7 @@ export function AdminSidebar() {
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Desbloqueie recursos avancados como analytics, dominio personalizado e mais.
+            Desbloqueie recursos avançados como analytics, domínio personalizado e mais.
           </p>
         </div>
       </SidebarContent>
@@ -167,10 +205,14 @@ export function AdminSidebar() {
                       AD
                     </AvatarFallback>
                   </Avatar>
+
                   <div className="flex flex-col items-start gap-0.5">
                     <span className="font-medium text-sm">Administrador</span>
-                    <span className="text-xs text-muted-foreground">admin@loja.com</span>
+                    <span className="text-xs text-muted-foreground">
+                      {role ?? "Carregando..."}
+                    </span>
                   </div>
+
                   <ChevronUp className="ml-auto size-4" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
@@ -179,23 +221,28 @@ export function AdminSidebar() {
                 side="top"
                 className="w-[--radix-popper-anchor-width] rounded-xl"
               >
-                <DropdownMenuItem asChild className="rounded-lg">
-                  <Link href="/bella-moda" className="flex items-center gap-2">
-                    <ExternalLink className="size-4" />
-                    Ver Loja
-                  </Link>
-                </DropdownMenuItem>
+                {storeSlug && (
+                  <>
+                    <DropdownMenuItem asChild className="rounded-lg">
+                      <Link href={`/${storeSlug}`} className="flex items-center gap-2">
+                        <ExternalLink className="size-4" />
+                        Ver Loja
+                      </Link>
+                    </DropdownMenuItem>
 
-                <DropdownMenuItem asChild className="rounded-lg">
-                  <Link href="/admin/settings" className="flex items-center gap-2">
-                    <Settings className="size-4" />
-                    Configuracoes
-                  </Link>
-                </DropdownMenuItem>
+                    {role === "OWNER" && (
+                      <DropdownMenuItem asChild className="rounded-lg">
+                        <Link href={`/admin/${storeSlug}/settings`} className="flex items-center gap-2">
+                          <Settings className="size-4" />
+                          Configurações
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
 
-                <DropdownMenuSeparator />
+                    <DropdownMenuSeparator />
+                  </>
+                )}
 
-                {/* 🔥 LOGOUT FUNCIONAL */}
                 <DropdownMenuItem
                   onClick={handleLogout}
                   className="rounded-lg text-destructive focus:text-destructive cursor-pointer"
@@ -203,7 +250,6 @@ export function AdminSidebar() {
                   <LogOut className="size-4" />
                   Sair
                 </DropdownMenuItem>
-
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>

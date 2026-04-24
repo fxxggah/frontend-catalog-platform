@@ -93,15 +93,6 @@ export function AdminHeader({ breadcrumbs }: AdminHeaderProps) {
           </div>
         </div>
 
-        {/* Notificações com Badge Vibrante */}
-        <Button variant="ghost" size="icon" className="h-11 w-11 rounded-2xl bg-slate-50/50 border border-transparent hover:border-slate-100 hover:bg-white transition-all relative">
-          <Bell className="h-5 w-5 text-slate-600" />
-          <span className="absolute top-3 right-3 flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-600"></span>
-          </span>
-        </Button>
-
         <div className="h-8 w-px bg-slate-100 mx-2 hidden md:block" />
 
         {/* Logout Refinado */}
